@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Cypher & Clue Library</title>
+    <style>
+  	@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+        :root { --primary: #4a90e2; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
+        
+        /* UI Styling */
+        #ui-container { max-width: 950px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .section { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        h3 { margin-top: 0; color: var(--primary); font-size: 1.1em; text-transform: uppercase; }
+        
+	#key-page { margin-bottom:20px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.85em; color: #555; }
+        select, input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        
+        .clue-builder { background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
+        .active-clue { display: flex; align-items: center; margin-bottom: 5px; gap: 8px; }
+        .remove-btn { background: #e74c3c; color: white; border: none; border-radius: 4px; padding: 10px 15px; cursor: pointer; font-weight: bold; }
+
+        .btn-row { margin-top: 20px; display: flex; gap: 10px; }
+        button { flex: 1; padding: 15px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
+        .gen-btn { background: var(--primary); color: white; }
+        .print-btn { background: #27ae60; color: white; }
+
+        /* Output / Print Styling */
+        #print-area { background: white; display: none; padding: 20px; }
+        
+        /* Clue Output Logic */
+        .clue-item { 
+            border: 2px solid #000; 
+            margin-bottom: 40px; 
+            padding: 10px 40px 40px; 
+            display: flex; 
+            flex-wrap: wrap; 
+            column-gap: 1.25em; /* Space between words */
+        }
+        .word-box { 
+            display: flex; 
+            flex-wrap: nowrap; 
+            white-space: nowrap; 
+        }
+        .emoji-char { 
+            display: inline-block; 
+            text-align: center;
+            min-width: 1.1em; 
+        }
+
+        /* Key Output Logic */
+        .cypher-key-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 10px; text-align: center; font-family: 'Roboto Mono', monospace; font-weight: bold}
+        .key-pair { border: 1px solid #000; padding: 10px; display: flex; flex-direction: column; justify-content: center; }
+        
+        .page-break { page-break-before: always; }
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    body { padding: 10px; }
+    
+    .grid { 
+        grid-template-columns: 1fr; /* Collapse to one column */
+        gap: 10px;
+    }
+
+    .btn-row { 
+        flex-direction: column; /* Stack buttons vertically */
+    }
+
+    button {
+        padding: 18px; /* Bigger tap targets */
+        width: 100%;
+    }
+
+    /* Make the active clue inputs a bit taller for mobile typing */
+    .active-clue input {
+        padding: 12px;
+        font-size: 16px; /* Prevents iOS from auto-zooming on focus */
+    }
+
+    h2 { font-size: 1.4em; }
+}
+
+        @media print {
+            #ui-container { display: none; }
+            #print-area { display: block !important; padding: 0; }
+            .clue-item { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="ui-container">
+    <h2>🕵️ Treasure Hunt Builder</h2>
+    
+    <div class="grid">
+        <div class="section">
+            <h3>1. Library & Cypher</h3>
+            <label>Select Cypher Theme</label>
+            <select id="cypher-select" onchange="generatePreview()"></select>
+
+            <label style="margin-top:15px;">Clue Category</label>
+            <select id="category-select" onchange="updateClueDropdown()"></select>
+
+            <label style="margin-top:15px;">Add Clue from Library</label>
+            <select id="clue-library-select" onchange="addClueFromLibrary()">
+                <option value="">-- Choose a clue --</option>
+            </select>
+        </div>
+
+        <div class="section clue-builder">
+            <h3>2. Active Hunt (Max 10)</h3>
+            <div id="active-clues-list"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>3. Style Settings (Live Preview)</h3>
+        <div class="grid">
+            <div>
+                <label>Clue Font Size: <span id="size-val">34</span>px</label>
+                <input type="range" id="font-size" min="16" max="80" value="34" oninput="generatePreview()">
+                
+                <label style="margin-top:10px;">Decoding Vertical Space: <span id="space-val">3</span></label>
+                <input type="range" id="line-spacing" min="1" max="6" step="0.5" value="3" oninput="generatePreview()">
+            </div>
+            <div>
+                <label>Key: Emoji Size: <span id="key-emoji-val">48</span>px</label>
+                <input type="range" id="key-emoji-size" min="16" max="80" value="48" oninput="generatePreview()">
+
+                <label style="margin-top:10px;">Key: Letter Size: <span id="key-letter-val">48</span>px</label>
+                <input type="range" id="key-letter-size" min="16" max="80" value="48" oninput="generatePreview()">
+            </div>
+        </div>
+    </div>
+
+    <div class="btn-row">
+        <button class="gen-btn" onclick="generatePreview()">Refresh Preview</button>
+        <button class="print-btn" onclick="window.print()">Print Hunt</button>
+    </div>
+</div>
+
+<div id="print-area">
+    <div id="key-page">
+        <h1 style="text-align: center;">THE SECRET CODE</h1>
+        <div id="key-display" class="cypher-key-grid"></div>
+    </div>
+    <div class="page-break"></div>
+    <div id="clues-display"></div>
+</div>
+
+
+<script src="cypher library.js"></script>
+
+<script>
+
+
+    function init() {
+        const cSel = document.getElementById('cypher-select');
+        for(let key in CYPHER_LIBRARY) cSel.innerHTML += `<option>${key}</option>`;
+
+        const catSel = document.getElementById('category-select');
+        for(let cat in CLUE_LIBRARY) catSel.innerHTML += `<option>${cat}</option>`;
+
+        const list = document.getElementById('active-clues-list');
+        for(let i=0; i<10; i++) {
+            list.innerHTML += `
+                <div class="active-clue">
+                    <span>${i+1}</span>
+                    <input type="text" class="clue-slot" placeholder="..." oninput="generatePreview()">
+                    <button class="remove-btn" onclick="this.previousElementSibling.value='';generatePreview();">X</button>
+                </div>`;
+        }
+        updateClueDropdown();
+    }
+
+    function updateClueDropdown() {
+        const cat = document.getElementById('category-select').value;
+        const libSel = document.getElementById('clue-library-select');
+        libSel.innerHTML = '<option value="">-- Choose a clue --</option>';
+        CLUE_LIBRARY[cat].forEach(clue => {
+            libSel.innerHTML += `<option value="${clue}">${clue}</option>`;
+        });
+    }
+
+    function addClueFromLibrary() {
+        const val = document.getElementById('clue-library-select').value;
+        if(!val) return;
+        const slots = document.querySelectorAll('.clue-slot');
+        for(let slot of slots) {
+            if(slot.value === "") {
+                slot.value = val;
+                break;
+            }
+        }
+        document.getElementById('clue-library-select').value = "";
+        generatePreview();
+    }
+
+    function generatePreview() {
+        const cypher = CYPHER_LIBRARY[document.getElementById('cypher-select').value];
+        const fSize = document.getElementById('font-size').value;
+        const lSpace = document.getElementById('line-spacing').value;
+        const kEmojiSize = document.getElementById('key-emoji-size').value;
+        const kLetterSize = document.getElementById('key-letter-size').value;
+
+        // Update Labels
+        document.getElementById('size-val').innerText = fSize;
+        document.getElementById('space-val').innerText = lSpace;
+        document.getElementById('key-emoji-val').innerText = kEmojiSize;
+        document.getElementById('key-letter-val').innerText = kLetterSize;
+
+        // Render Key
+        const keyDisp = document.getElementById('key-display');
+        keyDisp.innerHTML = '';
+        Object.keys(cypher).sort().forEach(char => {
+            if(char === ' ') return;
+            keyDisp.innerHTML += `
+                <div class="key-pair">
+                    <div style="font-size:${kEmojiSize}px">${cypher[char]}</div>
+                    <div style="font-size:${kLetterSize}px">${char}</div>
+                </div>`;
+        });
+
+        // Render Clues
+        const cluesDisp = document.getElementById('clues-display');
+        cluesDisp.innerHTML = '';
+        document.querySelectorAll('.clue-slot').forEach(slot => {
+            if(!slot.value.trim()) return;
+            
+            const clueBox = document.createElement('div');
+            clueBox.className = 'clue-item';
+            clueBox.style.fontSize = fSize + 'px';
+            clueBox.style.lineHeight = lSpace;
+            clueBox.style.paddingBottom = (fSize * lSpace) / 2 + 'px'; // Fixes bottom spacing
+
+            // Split into words to prevent breaking mid-word
+            const words = slot.value.toUpperCase().split(' ');
+            words.forEach(word => {
+                const wordSpan = document.createElement('span');
+                wordSpan.className = 'word-box';
+                
+                for(let char of word) {
+                    const charSpan = document.createElement('span');
+                    charSpan.className = 'emoji-char';
+                    charSpan.innerText = cypher[char] || char;
+                    wordSpan.appendChild(charSpan);
+                }
+                clueBox.appendChild(wordSpan);
+            });
+            cluesDisp.appendChild(clueBox);
+        });
+
+        document.getElementById('print-area').style.display = 'block';
+    }
+
+    init();
+</script>
+
+</body>
+</html>
