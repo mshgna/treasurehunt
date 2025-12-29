@@ -1,48 +1,56 @@
 const CYPHER_LIBRARY = {
 
 "Standard Mix": {
+  heading: "THE SECRET CODE",
       'A': '😀', 'B': '🍔', 'C': '🍕', 'D': '🚀', 'E': '💎', 'F': '👻', 'G': '❤️', 'H': '🍭'
     , 'I': '🌈', 'J': '🎁', 'K': '🏀', 'L': '🌙', 'M': '🎨', 'N': '🍦', 'O': '🎸', 'P': '🍀'
     , 'Q': '🦋', 'R': '🍄', 'S': '🎈', 'T': '🍿', 'U': '⭐', 'V': '🚜', 'W': '🧩', 'X': '💀'
     , 'Y': '🧸', 'Z': '🔥', ' ': ' '
 }
     , "Ocean Explorer": {
-          'A': '🐚', 'B': '🤿', 'C': '⚓', 'D': '🐢', 'E': '🌊', 'F': '🦀', 'G': '🐳', 'H': '🌴'
+       heading: "SECRET CODE: OCEAN EXPLORER",
+         'A': '🐚', 'B': '🤿', 'C': '⚓', 'D': '🐢', 'E': '🌊', 'F': '🦀', 'G': '🐳', 'H': '🌴'
         , 'I': '🐠', 'J': '🛶', 'K': '🦈', 'L': '🪼', 'M': '🐬', 'N': '🦑', 'O': '🐡', 'P': '🏝️'
         , 'Q': '🏄', 'R': '⛵', 'S': '🧜', 'T': '🦞', 'U': '🫧', 'V': '🚢', 'W': '🌅', 'X': '🗺️'
         , 'Y': '🪸', 'Z': '🦐', ' ': ' '
     }
     , "Space Voyager": {
-          'A': '🚀', 'B': '🪐', 'C': '☄️', 'D': '👨‍🚀', 'E': '🛸', 'F': '🌌', 'G': '📡', 'H': '🔭'
+        heading: "SECRET CODE: SPACE VOYAGER",
+        'A': '🚀', 'B': '🪐', 'C': '☄️', 'D': '👨‍🚀', 'E': '🛸', 'F': '🌌', 'G': '📡', 'H': '🔭'
         , 'I': '🌙', 'J': '🧪', 'K': '🤖', 'L': '🌠', 'M': '⭐', 'N': '🛰️', 'O': '☀️', 'P': '🌍'
         , 'Q': '🔋', 'R': '👽', 'S': '💥', 'T': '🌑', 'U': '🌀', 'V': '🛸', 'W': '🌈', 'X': '👾'
         , 'Y': '⚡', 'Z': '🌡️', ' ': ' '
     }
     , "Secret Garden": {
-          'A': '🍄', 'B': '🦋', 'C': '🌿', 'D': '🐞', 'E': '🌻', 'F': '🐿️', 'G': '🕸️', 'H': '🌱'
+        heading: "SECRET CODE: SECRET GARDEN",
+        'A': '🍄', 'B': '🦋', 'C': '🌿', 'D': '🐞', 'E': '🌻', 'F': '🐿️', 'G': '🕸️', 'H': '🌱'
         , 'I': '🐌', 'J': '💧', 'K': '🌳', 'L': '🐦', 'M': '🌷', 'N': '🐝', 'O': '🪵', 'P': '🍎'
         , 'Q': '🦊', 'R': '🧺', 'S': '🍂', 'T': '⛲', 'U': '🐜', 'V': '🥕', 'W': '🌽', 'X': '🦉'
         , 'Y': '🐭', 'Z': '🍃', ' ': ' '
     }
     , "Wild Jungle": {
-          'A': '🐍', 'B': '🐘', 'C': '🐒', 'D': '🦜', 'E': '🐆', 'F': '🐊', 'G': '🦍', 'H': '🍃'
+        heading: "SECRET CODE: WILD JUNGLE",
+        'A': '🐍', 'B': '🐘', 'C': '🐒', 'D': '🦜', 'E': '🐆', 'F': '🐊', 'G': '🦍', 'H': '🍃'
         , 'I': '🦎', 'J': '🦋', 'K': '🥥', 'L': '🎋', 'M': '🐅', 'N': '🦗', 'O': '🐸', 'P': '🦂'
         , 'Q': '🦒', 'R': '🐾', 'S': '🦓', 'T': '🐗', 'U': '🐜', 'V': '🌵', 'W': '🛖', 'X': '🦇'
         , 'Y': '☀️', 'Z': '🐃', ' ': ' '
     }
     , "Magic Quest": {
+      heading: "SECRET CODE: MAGIC QUEST",
           'A': '👑', 'B': '🐉', 'C': '🛡️', 'D': '🏰', 'E': '🔮', 'F': '⚔️', 'G': '📜', 'H': '🕯️'
         , 'I': '💎', 'J': '🗝️', 'K': '🧪', 'L': '🦄', 'M': '🧙', 'N': '🕷️', 'O': '✨', 'P': '🦅'
         , 'Q': '💰', 'R': '🐺', 'S': '🔥', 'T': '🐎', 'U': '👁️', 'V': '💣', 'W': '🏹', 'X': '🪵'
         , 'Y': '🧚', 'Z': '⚒️', ' ': ' '
     }
 , "Ancient Runes": {
+        heading: "SECRET CODE: ANCIENT RUNES",
         'A':'ᚠ', 'B':'ᚡ', 'C':'ᚢ', 'D':'ᚣ', 'E':'ᚤ', 'F':'ᚥ', 'G':'ᚦ', 'H':'ᚧ',
         'I':'ᛄ', 'J':'ᛇ', 'K':'ᛂ', 'L':'ᚫ', 'M':'ᚬ', 'N':'ᚭ', 'O':'ᚮ', 'P':'ᚯ',
         'Q':'ᚰ', 'R':'ᛣ', 'S':'ᚻ', 'T':'ᚳ', 'U':'ᛗ', 'V':'ᚵ', 'W':'ᚴ', 'X':'ᚼ',
         'Y':'ᚸ', 'Z':'ᛝ', ' ': ' '
     }
 , "Spy Symbols": {
+        heading: "SECRET CODE: SPY SYMBOLS",
         'A':'⌘', 'B':'#', 'C':'$', 'D':'%', 'E':'&', 'F':'*', 'G':'+', 'H':'≠',
         'I':'?', 'J':'‼', 'K':'≤', 'L':'≥', 'M':'[', 'N':']', 'O':'{', 'P':'}',
         'Q':'/', 'R':'⁋', 'S':'≈', 'T':'@', 'U':'⍬', 'V':'⌽', 'W':'◇', 'X':'§',
@@ -79,15 +87,37 @@ const CLUE_LIBRARY = {
             , "IN THE SWING"
             , "BY THE GARAGE DOOR"
             , "BY THE BACK PORCH DOOR"
- 
-        ]
-        , "Outdoor": [
+            , "BEHIND THE CURTAINS"
+            , "UNDER THE RUG"
+            , "ON THE BOOKSHELF"
+            , "UNDER THE DOORMAT"
+            , "NEAR THE FORKS"
 
-        ]
-        , "Longer Riddles": [
-              "I HAVE TEETH BUT NO MOUTH"
-            , "I HAVE HANDS BUT NO ARMS"
-            , "I GET WET WHILE DRYING"
-            , "I HAVE AN EYE BUT CANNOT SEE"
-        ]
+ 
+        ],
+       "Cryptic Indoor": [
+        , "WHERE WATER FALLS BUT IT NEVER RAINS" // In the shower
+        , "WHERE WOOD TURNS TO ASH" // Fireplace
+        , "WHERE GUESTS SAY HELLO AND GOODBYE" // By the front door
+        ,  "BENEATH THE PLACE YOU DREAM AT NIGHT" // below the bed
+        ,  "NEAR WHAT HAS MANY KEYS BUT CANNOT OPEN A DOOR" // near the piano
+        ,  "WHERE CRUMBS FALL FROM PLATES" // under the table
+        ,  "ON A PLACE OF PENCILS AND PAPERS" // on your desk
+        ,  "LOOK UP FROM WHERE YOU CLOSE YOUR EYES" // above the bed 
+        ,  "LOOK INSIDE WHERE YOUR HEAD RESTS" // inside your pillow
+        ,  "WHERE SMELLY SHIRTS SLEEP" //  laundry basket
+        , "WHERE THE DIRTY CLOTHES GO TO HIDE" // Laundry basket
+        ,  "PROTECTED BY YOUR PLUSHY PALS" // near your lovies
+        ,  "WHERE TINY TOYS ARE TAKEN APART" // in the lego bin
+        ,  "WHERE THOUSANDS OF BRICKS LAY" // lego bin
+        , "LOOK WHERE THE TINY PLASTIC BRICKS LIVE" // Lego bin
+        ,  "BELOW THE PLACE WHERE BEANS ARE BREWED" // under the coffee
+        ,  "BEHIND THE HANGING WALLS OF CLOTH" // behind the curtains
+        ,  "FIND ME WHERE THE WINDOWS HIDE" // behind the curtains
+        ,  "NEAR THE THINGS THAT SCOOP AND STAB" // silverware drawer
+        , "BY A LARGE WHITE SEAT IN A VERY SMALL ROOM" // The potty
+        , "WHERE THE STORIES SLEEP ON SHELVES" // Bookshelf
+        , "BY THE PLACE WHERE PICTURES MOVE" // near the TV
+        , "BENEATH THE FABRIC ON THE FLOOR" // Under the rug
+    ]
 };
