@@ -15,6 +15,10 @@
         .section { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
         h3 { margin-top: 0; color: var(--primary); font-size: 1.1em; text-transform: uppercase; }
         
+        /* UI Shuffle Button styling */
+    .shuffle-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .shuffle-row input { width: auto; }
+
 	#key-page { margin-bottom:20px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.85em; color: #555; }
         select, input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
@@ -30,7 +34,12 @@
 
         /* Output / Print Styling */
         #print-area { background: white; display: none; padding: 20px; }
-        
+        #print-area, #print-area *, .clue-item, .key-pair {
+        background-color: white !important;
+        background: white !important;
+        color: black !important;
+    }
+
         /* Clue Output Logic */
         .clue-item { 
             border: 2px solid #000; 
@@ -100,7 +109,13 @@
         <div class="section">
             <h3>1. Library & Cypher</h3>
             <label>Select Cypher Theme</label>
-            <select id="cypher-select" onchange="generatePreview()"></select>
+            <select id="cypher-select" onchange="handleCypherChange()"></select>
+            
+            <div class="shuffle-row" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                <input type="checkbox" id="shuffle-check" onchange="handleCypherChange()" style="width: auto;">
+                <label for="shuffle-check" style="margin-bottom: 0;">Shuffle Symbol Mapping</label>
+                <button onclick="handleCypherChange()" style="padding: 5px 10px; font-size: 12px; flex: none; width: auto;">Reshuffle Now</button>
+            </div>
 
             <label style="margin-top:15px;">Clue Category</label>
             <select id="category-select" onchange="updateClueDropdown()"></select>
@@ -112,7 +127,7 @@
         </div>
 
         <div class="section clue-builder">
-            <h3>2. Active Hunt (Max 10)</h3>
+            <h3>2. Active Hunt (Max 15)</h3>
             <div id="active-clues-list"></div>
         </div>
     </div>
@@ -140,6 +155,7 @@
     <div class="btn-row">
         <button class="gen-btn" onclick="generatePreview()">Refresh Preview</button>
         <button class="print-btn" onclick="window.print()">Print Hunt</button>
+        <button onclick="resetDefaults()" style="background: #95a5a6; color: white;">Reset All</button>
     </div>
 </div>
 
@@ -153,74 +169,175 @@
 </div>
 
 
-<script src="cypher library.js"></script>
 
+
+ <script src="cypher library.js"></script>
 <script>
+    let activeMapping = {}; // Stores the current (possibly shuffled) mapping
 
+function init() {
+    // Populate Cypher Themes
+    const cSel = document.getElementById('cypher-select');
+    cSel.innerHTML = '';
+    for(let key in CYPHER_LIBRARY) cSel.innerHTML += `<option>${key}</option>`;
 
-    function init() {
-        const cSel = document.getElementById('cypher-select');
-        for(let key in CYPHER_LIBRARY) cSel.innerHTML += `<option>${key}</option>`;
+    // Populate Clue Categories
+    const catSel = document.getElementById('category-select');
+    catSel.innerHTML = '';
+    for(let cat in CLUE_LIBRARY) catSel.innerHTML += `<option>${cat}</option>`;
 
-        const catSel = document.getElementById('category-select');
-        for(let cat in CLUE_LIBRARY) catSel.innerHTML += `<option>${cat}</option>`;
-
-        const list = document.getElementById('active-clues-list');
-        for(let i=0; i<10; i++) {
-            list.innerHTML += `
-                <div class="active-clue">
-                    <span>${i+1}</span>
-                    <input type="text" class="clue-slot" placeholder="..." oninput="generatePreview()">
-                    <button class="remove-btn" onclick="this.previousElementSibling.value='';generatePreview();">X</button>
-                </div>`;
-        }
-        updateClueDropdown();
+    // Generate 15 Slots
+    const list = document.getElementById('active-clues-list');
+    list.innerHTML = '';
+    for(let i=0; i<15; i++) {
+        list.innerHTML += `
+            <div class="active-clue">
+                <span>${i+1}</span>
+                <input type="text" class="clue-slot" placeholder="..." data-index="${i}" oninput="saveAndPreview()">
+                <button class="remove-btn" onclick="clearSlot(${i})">X</button>
+            </div>`;
     }
+    
+    // Load saved data and then sync the dropdowns
+    loadSettings();
+    updateClueDropdown(); 
+}
 
     function updateClueDropdown() {
-        const cat = document.getElementById('category-select').value;
+        const catSel = document.getElementById('category-select');
         const libSel = document.getElementById('clue-library-select');
+        
+        // Safety check to ensure the library and category exist
+        if (!CLUE_LIBRARY || !catSel.value) return;
+
+        const cat = catSel.value;
         libSel.innerHTML = '<option value="">-- Choose a clue --</option>';
+        
         CLUE_LIBRARY[cat].forEach(clue => {
             libSel.innerHTML += `<option value="${clue}">${clue}</option>`;
         });
     }
 
     function addClueFromLibrary() {
-        const val = document.getElementById('clue-library-select').value;
-        if(!val) return;
-        const slots = document.querySelectorAll('.clue-slot');
-        for(let slot of slots) {
-            if(slot.value === "") {
-                slot.value = val;
-                break;
-            }
+    const val = document.getElementById('clue-library-select').value;
+    if(!val) return;
+    
+    const slots = document.querySelectorAll('.clue-slot');
+    let foundEmpty = false;
+    
+    for(let slot of slots) {
+        if(slot.value === "") {
+            slot.value = val;
+            foundEmpty = true;
+            break;
         }
-        document.getElementById('clue-library-select').value = "";
+    }
+    
+    if(!foundEmpty) {
+        alert("Your 15 slots are full! Clear a slot to add more.");
+    }
+    
+    // Reset the dropdown so you can select the same clue again if needed
+    document.getElementById('clue-library-select').value = "";
+    saveAndPreview();
+}
+
+    function clearSlot(index) {
+        document.querySelectorAll('.clue-slot')[index].value = '';
+        saveAndPreview();
+    }
+
+    function handleCypherChange() {
+        const theme = document.getElementById('cypher-select').value;
+        const shouldShuffle = document.getElementById('shuffle-check').checked;
+        const original = CYPHER_LIBRARY[theme];
+        
+        if (!shouldShuffle) {
+            activeMapping = { ...original };
+        } else {
+            activeMapping = shuffleCypher(original);
+        }
+        saveAndPreview();
+    }
+
+    function shuffleCypher(obj) {
+        const heading = obj.heading;
+        const keys = Object.keys(obj).filter(k => k !== ' ' && k !== 'heading');
+        const values = keys.map(k => obj[k]);
+        
+        // Fisher-Yates Shuffle
+        for (let i = values.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [values[i], values[j]] = [values[j], values[i]];
+        }
+
+        const newMap = { ' ': ' ', heading: heading };
+        keys.forEach((key, i) => newMap[key] = values[i]);
+        return newMap;
+    }
+
+    function saveAndPreview() {
+        const settings = {
+            theme: document.getElementById('cypher-select').value,
+            shuffle: document.getElementById('shuffle-check').checked,
+            mapping: activeMapping,
+            clues: Array.from(document.querySelectorAll('.clue-slot')).map(s => s.value),
+            fontSize: document.getElementById('font-size').value,
+            spacing: document.getElementById('line-spacing').value,
+            kEmoji: document.getElementById('key-emoji-size').value,
+            kLetter: document.getElementById('key-letter-size').value
+        };
+        localStorage.setItem('treasureHuntSettings', JSON.stringify(settings));
+        generatePreview();
+    }
+
+    function loadSettings() {
+        const saved = localStorage.getItem('treasureHuntSettings');
+        if (!saved) {
+            handleCypherChange();
+            return;
+        }
+        const data = JSON.parse(saved);
+        
+        document.getElementById('cypher-select').value = data.theme;
+        document.getElementById('shuffle-check').checked = data.shuffle;
+        document.getElementById('font-size').value = data.fontSize;
+        document.getElementById('line-spacing').value = data.spacing;
+        document.getElementById('key-emoji-size').value = data.kEmoji;
+        document.getElementById('key-letter-size').value = data.kLetter;
+        
+        activeMapping = data.mapping;
+
+        const slots = document.querySelectorAll('.clue-slot');
+        data.clues.forEach((val, i) => { if(slots[i]) slots[i].value = val; });
+        
         generatePreview();
     }
 
     function generatePreview() {
-        const cypher = CYPHER_LIBRARY[document.getElementById('cypher-select').value];
         const fSize = document.getElementById('font-size').value;
         const lSpace = document.getElementById('line-spacing').value;
         const kEmojiSize = document.getElementById('key-emoji-size').value;
         const kLetterSize = document.getElementById('key-letter-size').value;
 
-        // Update Labels
+        // Labels
         document.getElementById('size-val').innerText = fSize;
         document.getElementById('space-val').innerText = lSpace;
         document.getElementById('key-emoji-val').innerText = kEmojiSize;
         document.getElementById('key-letter-val').innerText = kLetterSize;
 
+        // Heading
+        const headingText = activeMapping.heading || "THE SECRET CODE";
+        document.querySelector('#key-page h1').innerText = headingText;
+
         // Render Key
         const keyDisp = document.getElementById('key-display');
         keyDisp.innerHTML = '';
-        Object.keys(cypher).sort().forEach(char => {
-            if(char === ' ') return;
+        Object.keys(activeMapping).sort().forEach(char => {
+            if(char === ' ' || char === 'heading') return;
             keyDisp.innerHTML += `
                 <div class="key-pair">
-                    <div style="font-size:${kEmojiSize}px">${cypher[char]}</div>
+                    <div style="font-size:${kEmojiSize}px">${activeMapping[char]}</div>
                     <div style="font-size:${kLetterSize}px">${char}</div>
                 </div>`;
         });
@@ -230,33 +347,43 @@
         cluesDisp.innerHTML = '';
         document.querySelectorAll('.clue-slot').forEach(slot => {
             if(!slot.value.trim()) return;
-            
             const clueBox = document.createElement('div');
             clueBox.className = 'clue-item';
             clueBox.style.fontSize = fSize + 'px';
             clueBox.style.lineHeight = lSpace;
-            clueBox.style.paddingBottom = (fSize * lSpace) / 2 + 'px'; // Fixes bottom spacing
+            clueBox.style.paddingBottom = (fSize * lSpace) / 2 + 'px';
 
-            // Split into words to prevent breaking mid-word
-            const words = slot.value.toUpperCase().split(' ');
-            words.forEach(word => {
+            slot.value.toUpperCase().split(' ').forEach(word => {
                 const wordSpan = document.createElement('span');
                 wordSpan.className = 'word-box';
-                
                 for(let char of word) {
                     const charSpan = document.createElement('span');
                     charSpan.className = 'emoji-char';
-                    charSpan.innerText = cypher[char] || char;
+                    charSpan.innerText = activeMapping[char] || char;
                     wordSpan.appendChild(charSpan);
                 }
                 clueBox.appendChild(wordSpan);
             });
             cluesDisp.appendChild(clueBox);
         });
-
         document.getElementById('print-area').style.display = 'block';
     }
 
+  function resetDefaults() {
+    if (confirm("Are you sure you want to clear all clues and reset settings?")) {
+        // Wipe storage
+        localStorage.removeItem('treasureHuntSettings');
+        
+        // Clear UI Inputs
+        document.querySelectorAll('.clue-slot').forEach(slot => slot.value = '');
+        document.getElementById('shuffle-check').checked = false;
+        
+        // Refresh page to restore default cypher and state
+        location.reload();
+    }
+}
+
+    // Call init at the end
     init();
 </script>
 
