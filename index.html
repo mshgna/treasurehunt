@@ -19,6 +19,20 @@
     .shuffle-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
     .shuffle-row input { width: auto; }
 
+    .hider-label {
+        display: block;
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 14px;
+        font-weight: bold;
+        color: #grey;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        font-style:italic;
+        position:absolute;
+        top:0px;
+        left:15px;
+    }
+
 	#key-page { margin-bottom:20px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.85em; color: #555; }
         select, input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
@@ -48,6 +62,7 @@
             display: flex; 
             flex-wrap: wrap; 
             column-gap: 1.25em; /* Space between words */
+            position:relative;
         }
         .word-box { 
             display: flex; 
@@ -94,9 +109,10 @@
 }
 
         @media print {
-            #ui-container { display: none; }
+            #ui-container { display: none !important;  }
             #print-area { display: block !important; padding: 0; }
             .clue-item { page-break-inside: avoid; }
+            .hider-label { display: none !important; }
         }
     </style>
 </head>
@@ -347,15 +363,25 @@ function init() {
         cluesDisp.innerHTML = '';
         document.querySelectorAll('.clue-slot').forEach(slot => {
             if(!slot.value.trim()) return;
+
             const clueBox = document.createElement('div');
             clueBox.className = 'clue-item';
             clueBox.style.fontSize = fSize + 'px';
             clueBox.style.lineHeight = lSpace;
             clueBox.style.paddingBottom = (fSize * lSpace) / 2 + 'px';
 
-            slot.value.toUpperCase().split(' ').forEach(word => {
+            // Add the hider-label for on-screen viewing
+            const hiderLabel = document.createElement('div');
+            hiderLabel.className = 'hider-label';
+            hiderLabel.innerText = slot.value;
+            clueBox.appendChild(hiderLabel);
+
+            // Split into words to prevent breaking mid-word
+            const words = slot.value.toUpperCase().split(' ');
+            words.forEach(word => {
                 const wordSpan = document.createElement('span');
                 wordSpan.className = 'word-box';
+
                 for(let char of word) {
                     const charSpan = document.createElement('span');
                     charSpan.className = 'emoji-char';
@@ -366,6 +392,7 @@ function init() {
             });
             cluesDisp.appendChild(clueBox);
         });
+
         document.getElementById('print-area').style.display = 'block';
     }
 
