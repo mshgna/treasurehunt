@@ -6,7 +6,7 @@
     <title>Emoji Cypher & Clue Library</title>
     <style>
   	@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
-        :root { --primary: #4a90e2; --bg: #f4f7f6; }
+        :root { --primary: #4a90e2; --bg: #ffffff; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
         
         /* UI Styling */
@@ -16,8 +16,30 @@
         h3 { margin-top: 0; color: var(--primary); font-size: 1.1em; text-transform: uppercase; }
         
         /* UI Shuffle Button styling */
-    .shuffle-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-    .shuffle-row input { width: auto; }
+    .shuffle-row, .teamwork-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .shuffle-row input, .teamwork-row input { width: auto; }
+
+
+/* Color Classes for Borders */
+.border-black { border-color: #000000 !important; }
+.border-red   { border-color: #e74c3c !important; }
+.border-blue  { border-color: #3498db !important; }
+.border-green { border-color: #27ae60 !important; }
+.border-yellow{ border-color: #f1c40f !important; }
+.border-purple{ border-color: #9b59b6 !important; }
+
+/* Puzzle Image Container */
+#puzzle-image-container {
+    display: none; /* Only shows when an image is uploaded */
+    width: 10.6in;
+    height: 8.1in;
+    margin: 20px auto;
+    border: 2px solid #ccc;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    page-break-before: always;
+}
 
     .hider-label {
         display: block;
@@ -50,7 +72,6 @@
         #print-area { background: white; display: none; padding: 20px; }
         #print-area, #print-area *, .clue-item, .key-pair {
         background-color: white !important;
-        background: white !important;
         color: black !important;
     }
 
@@ -58,7 +79,7 @@
         .clue-item { 
             border: 2px solid #000; 
             margin-bottom: 40px; 
-            padding: 10px 40px 40px; 
+            padding: 2px 40px 40px; 
             display: flex; 
             flex-wrap: wrap; 
             column-gap: 1.25em; /* Space between words */
@@ -76,8 +97,9 @@
         }
 
         /* Key Output Logic */
-        .cypher-key-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 10px; text-align: center; font-family: 'Roboto Mono', monospace; font-weight: bold}
+        .cypher-key-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 10px; text-align: center; font-family: 'Roboto Mono', monospace; }
         .key-pair { border: 1px solid #000; padding: 10px; display: flex; flex-direction: column; justify-content: center; }
+        .key-pair-letter {font-weight: bold;}
         
         .page-break { page-break-before: always; }
 
@@ -109,11 +131,24 @@
 }
 
         @media print {
+            @page {
+        margin: 0.2in; /* Minimal safety margin for most home printers */
+    }
+              body { background: white !important; padding: 0; margin: 0; }    
             #ui-container { display: none !important;  }
-            #print-area { display: block !important; padding: 0; }
+            #print-area { display: block !important; padding: 0; width: 100% !important; }
             .clue-item { page-break-inside: avoid; }
             .hider-label { display: none !important; }
+            #puzzle-image-container { display: block !important; page-break-before: always; border: none !important; height: 8.5in;
+        width: 11in;
+        margin:auto;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;}
         }
+        #key-page, #clues-display {
+        margin: 0.3in;
+    }
     </style>
 </head>
 <body>
@@ -122,15 +157,16 @@
     <h2>🕵️ Treasure Hunt Builder</h2>
     
     <div class="grid">
+
         <div class="section">
-            <h3>1. Library & Cypher</h3>
+            <h3>Library & Cypher</h3>
             <label>Select Cypher Theme</label>
             <select id="cypher-select" onchange="handleCypherChange()"></select>
             
             <div class="shuffle-row" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
                 <input type="checkbox" id="shuffle-check" onchange="handleCypherChange()" style="width: auto;">
                 <label for="shuffle-check" style="margin-bottom: 0;">Shuffle Symbol Mapping</label>
-                <button onclick="handleCypherChange()" style="padding: 5px 10px; font-size: 12px; flex: none; width: auto;">Reshuffle Now</button>
+                <button class="gen-btn" onclick="handleCypherChange()" style="padding: 5px 10px; font-size: 12px; flex: none; width: auto;">Reshuffle Now</button>
             </div>
 
             <label style="margin-top:15px;">Clue Category</label>
@@ -140,16 +176,32 @@
             <select id="clue-library-select" onchange="addClueFromLibrary()">
                 <option value="">-- Choose a clue --</option>
             </select>
+
+            <label style="margin-top:15px;">Mashup Cyphers (Select up to 6)</label>
+<select id="mashup-select" multiple style="height: 120px; margin-bottom: 5px;">
+    </select>
+<button class="gen-btn" style="padding: 8px; font-size: 13px;" onclick="generateMashup()">Generate New Mashup</button>
+
+<div class="teamwork-row" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+        <input type="checkbox" id="teamwork-mode-check" onchange="saveAndPreview()">
+        <label style="margin-bottom: 0;">
+            Enable Teamwork Mode
+        </label>
+        <p style="font-size: 11px; margin: 0 0 0 10px; color: #555; width:40%; ">
+            Clues will alternate between the <strong>original</strong> cyphers selected in the mashup list.
+        </p>
+    </div>
+
         </div>
 
         <div class="section clue-builder">
-            <h3>2. Active Hunt (Max 15)</h3>
+            <h3>Active Hunt (Max 15)</h3>
             <div id="active-clues-list"></div>
         </div>
     </div>
 
     <div class="section">
-        <h3>3. Style Settings (Live Preview)</h3>
+        <h3>Style Settings (Live Preview)</h3>
         <div class="grid">
             <div>
                 <label>Clue Font Size: <span id="size-val">34</span>px</label>
@@ -165,8 +217,32 @@
                 <label style="margin-top:10px;">Key: Letter Size: <span id="key-letter-val">48</span>px</label>
                 <input type="range" id="key-letter-size" min="16" max="80" value="48" oninput="generatePreview()">
             </div>
+            <div>
+                <label>Border Color</label>
+                <select id="border-color-select" onchange="saveAndPreview()">
+                    <option value="border-black">Black (Default)</option>
+                    <option value="border-red">Red</option>
+                    <option value="border-blue">Blue</option>
+                    <option value="border-green">Green</option>
+                    <option value="border-yellow">Yellow</option>
+                    <option value="border-purple">Purple</option>
+                </select>
+            </div>
         </div>
     </div>
+
+    <div class="section">
+    <h3>Puzzle Image (Backside)</h3>
+ <label>Select Sample Image</label>
+    <select id="sample-image-select" onchange="useSampleImage()">
+        <option value="">-- Or Upload Below --</option>
+        <option value="images/image001.jpg">Sample 1 (image001)</option>
+        <option value="images/image002.jpg">Sample 2 (image002)</option>
+    </select>
+
+    <label style="margin-top:10px;">Upload Custom Image</label>
+    <input type="file" id="puzzle-upload" accept="image/*" onchange="handleImageUpload(this)">
+</div>
 
     <div class="btn-row">
         <button class="gen-btn" onclick="generatePreview()">Refresh Preview</button>
@@ -181,7 +257,11 @@
         <div id="key-display" class="cypher-key-grid"></div>
     </div>
     <div class="page-break"></div>
+
     <div id="clues-display"></div>
+
+    <div id="puzzle-image-container"></div>
+
 </div>
 
 
@@ -190,12 +270,23 @@
  <script src="cypher library.js"></script>
 <script>
     let activeMapping = {}; // Stores the current (possibly shuffled) mapping
+let puzzleImageURL = "";
 
 function init() {
-    // Populate Cypher Themes
+
+// Populate the standard Cypher Theme dropdown
     const cSel = document.getElementById('cypher-select');
+    // Populate the new Multiple Select Mashup dropdown
+    const mSel = document.getElementById('mashup-select');
+    
     cSel.innerHTML = '';
-    for(let key in CYPHER_LIBRARY) cSel.innerHTML += `<option>${key}</option>`;
+    mSel.innerHTML = '';
+
+    for(let key in CYPHER_LIBRARY) {
+        const option = `<option value="${key}">${key}</option>`;
+        cSel.innerHTML += option;
+        mSel.innerHTML += option;
+    }
 
     // Populate Clue Categories
     const catSel = document.getElementById('category-select');
@@ -292,6 +383,99 @@ function init() {
         return newMap;
     }
 
+   function generateMashup() {
+    const mSel = document.getElementById('mashup-select');
+    const selectedThemes = Array.from(mSel.selectedOptions).map(opt => opt.value);
+    
+    if (selectedThemes.length === 0) {
+        alert("Please select at least one cypher from the list!");
+        return;
+    }
+
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    let combinedPool = [];
+    let usedInPool = new Set();
+
+    // 1. Build a unique pool of symbols from the selected cyphers
+    selectedThemes.forEach(theme => {
+        const source = CYPHER_LIBRARY[theme];
+        Object.keys(source).forEach(key => {
+            // Skip metadata keys and the space character
+            if (key !== 'heading' && key !== 'isRunic' && key !== ' ') {
+                const symbol = source[key];
+                if (!usedInPool.has(symbol)) {
+                    combinedPool.push(symbol);
+                    usedInPool.add(symbol);
+                }
+            }
+        });
+    });
+
+    // 2. Shuffle the symbol pool (Fisher-Yates)
+    for (let i = combinedPool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [combinedPool[i], combinedPool[j]] = [combinedPool[j], combinedPool[i]];
+    }
+
+    // 3. Create the new mapping
+    let newMapping = { 
+        ' ': ' ', 
+        heading: "MASHUP: " + selectedThemes.join(" & ") 
+    };
+
+    // 4. Assign shuffled symbols to the alphabet
+    alphabet.forEach((char, index) => {
+        // If our pool is smaller than 26 (unlikely with multiple cyphers), 
+        // it will use a fallback emoji.
+        newMapping[char] = combinedPool[index] || "❓";
+    });
+
+    activeMapping = newMapping;
+    
+    // Check if any of the selected cyphers were Runic to enable the font
+    activeMapping.isRunic = selectedThemes.some(t => CYPHER_LIBRARY[t].isRunic);
+
+    saveAndPreview();
+}
+
+// Function to use your local folder images
+function useSampleImage() {
+    const path = document.getElementById('sample-image-select').value;
+    if (path) {
+        displayPuzzleImage(path);
+    }
+}
+
+// Function to handle the file upload
+function handleImageUpload(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            displayPuzzleImage(e.target.result);
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Unified function to show the image
+function displayPuzzleImage(source) {
+    const container = document.getElementById('puzzle-image-container');
+    container.style.backgroundImage = `url('${source}')`;
+    container.style.display = 'block';
+    
+    // Add a invisible character to ensure the div isn't "empty"
+    container.innerHTML = "&nbsp;";
+
+    // Smooth scroll to the image so you know it worked
+    container.scrollIntoView({ behavior: 'smooth' });
+    
+    // Save the image source to memory (Note: Large images may exceed localStorage limits)
+    // We only save the path if it's a sample image
+    if (source.startsWith('images/')) {
+        saveAndPreview(); 
+    }
+}
+
     function saveAndPreview() {
         const settings = {
             theme: document.getElementById('cypher-select').value,
@@ -335,6 +519,7 @@ function init() {
         const lSpace = document.getElementById('line-spacing').value;
         const kEmojiSize = document.getElementById('key-emoji-size').value;
         const kLetterSize = document.getElementById('key-letter-size').value;
+        const colorClass = document.getElementById('border-color-select').value;
 
         // Labels
         document.getElementById('size-val').innerText = fSize;
@@ -350,11 +535,11 @@ function init() {
         const keyDisp = document.getElementById('key-display');
         keyDisp.innerHTML = '';
         Object.keys(activeMapping).sort().forEach(char => {
-            if(char === ' ' || char === 'heading') return;
+            if(char === ' ' || char === 'heading' || char === 'isRunic') return;
             keyDisp.innerHTML += `
-                <div class="key-pair">
+                <div class="key-pair ${colorClass}">
                     <div style="font-size:${kEmojiSize}px">${activeMapping[char]}</div>
-                    <div style="font-size:${kLetterSize}px">${char}</div>
+                    <div class="key-pair-letter" style="font-size:${kLetterSize}px">${char}</div>
                 </div>`;
         });
 
@@ -362,10 +547,11 @@ function init() {
         const cluesDisp = document.getElementById('clues-display');
         cluesDisp.innerHTML = '';
         document.querySelectorAll('.clue-slot').forEach(slot => {
+
             if(!slot.value.trim()) return;
 
             const clueBox = document.createElement('div');
-            clueBox.className = 'clue-item';
+            clueBox.className = `clue-item ${colorClass}`;
             clueBox.style.fontSize = fSize + 'px';
             clueBox.style.lineHeight = lSpace;
             clueBox.style.paddingBottom = (fSize * lSpace) / 2 + 'px';
@@ -376,8 +562,15 @@ function init() {
             hiderLabel.innerText = slot.value;
             clueBox.appendChild(hiderLabel);
 
+        // Identify Teamwork Mode settings
+            const isTeamwork = document.getElementById('teamwork-mode-check').checked;
+            const mSel = document.getElementById('mashup-select');
+            const selectedThemes = Array.from(mSel.selectedOptions).map(opt => opt.value);
+
             // Split into words to prevent breaking mid-word
             const words = slot.value.toUpperCase().split(' ');
+            let charCounter = 0; // This resets for every NEW clue box
+
             words.forEach(word => {
                 const wordSpan = document.createElement('span');
                 wordSpan.className = 'word-box';
@@ -385,7 +578,19 @@ function init() {
                 for(let char of word) {
                     const charSpan = document.createElement('span');
                     charSpan.className = 'emoji-char';
-                    charSpan.innerText = activeMapping[char] || char;
+
+                            // LOGIC SPLIT: Teamwork vs. Standard/Mashup
+                    if (isTeamwork && selectedThemes.length > 0) {
+                        // Pick a theme based on the character's position (rotating)
+                        const themeName = selectedThemes[charCounter % selectedThemes.length];
+                        charSpan.innerText = CYPHER_LIBRARY[themeName][char] || char;
+                        charCounter++; 
+                    } else {
+                        // Use the master mapping (Standard or the generated Mashup)
+                        charSpan.innerText = activeMapping[char] || char;
+                    }
+
+
                     wordSpan.appendChild(charSpan);
                 }
                 clueBox.appendChild(wordSpan);
@@ -393,7 +598,8 @@ function init() {
             cluesDisp.appendChild(clueBox);
         });
 
-        document.getElementById('print-area').style.display = 'block';
+        const printArea = document.getElementById('print-area');
+    printArea.style.display = 'block';
     }
 
   function resetDefaults() {
